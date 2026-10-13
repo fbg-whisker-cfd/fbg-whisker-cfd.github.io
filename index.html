@@ -1,0 +1,1083 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="light" />
+    <title>Simulating the Wake and the Whisker · FBG Whisker CFD</title>
+    <meta
+      name="description"
+      content="2D fishtail-wake and 3D whisker fluid–structure simulations that guided the fishtail and whisker parameters of the FBG Whisker experiments. By Xiaochi Xie and Siyue Yao."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Simulating the Wake and the Whisker" />
+    <meta
+      property="og:description"
+      content="CFD behind the FBG Whisker experiments: the wake of a pitching fishtail, and the flow load on a wavy whisker and its FBG base."
+    />
+    <meta
+      property="og:image"
+      content="https://fbg-whisker-cfd.github.io/static/images/hero_wake.jpg"
+    />
+    <meta property="og:url" content="https://fbg-whisker-cfd.github.io/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://fbg-whisker-cfd.github.io/" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>🌀</text></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Castoro:ital@0;1&family=Noto+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="static/images/hero_wake.jpg"
+      fetchpriority="high"
+    />
+    <link rel="stylesheet" href="project.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow">FBG Whisker · CFD</p>
+        <h1>
+          <span>Simulating the Wake</span><span>and the Whisker</span>
+        </h1>
+      </div>
+      <div class="hero-media">
+        <img
+          class="hero-poster"
+          src="static/images/hero_wake.jpg"
+          alt=""
+          fetchpriority="high"
+        />
+        <video
+          id="hero-video"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+          poster="static/images/hero_wake.jpg"
+          aria-hidden="true"
+        >
+          <source src="static/videos/hero_wake.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="hero-foot">
+        <p>
+          Vorticity behind a pitching fishtail,
+          <span class="runs" data-translating="3.33 6.13"
+            ><span class="run-fixed">fixed</span> /
+            <span class="run-translating">translating</span></span
+          >
+          <span class="key"
+            ><span><i class="pos"></i>counter-clockwise</span
+            ><span><i class="neg"></i>clockwise</span></span
+          >
+        </p>
+        <button class="motion-toggle" type="button" data-video="hero-video">
+          Pause video
+        </button>
+      </div>
+      <div class="hero-meta">
+        <p class="authors">
+          Xiaochi Xie<sup>1</sup>, Siyue Yao<sup>1,2</sup>
+        </p>
+        <p class="affil">
+          <sup>1</sup>Stanford University &nbsp;·&nbsp; <sup>2</sup>Shanghai
+          Jiao Tong University
+        </p>
+      </div>
+    </header>
+
+    <nav class="nav" aria-label="Sections">
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#fishtail">Fishtail wake</a></li>
+        <li><a href="#whisker">Whisker in flow</a></li>
+        <li><a href="#design">Design study</a></li>
+        <li><a href="#notes">Notes</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <section class="statement" id="overview">
+        <h2>Simulations behind the FBG Whisker experiments</h2>
+        <p>
+          Two sets of simulations shaped the FBG Whisker experiments. A 2D model
+          of a pitching fishtail showed the wake each stroke leaves behind, and
+          guided the fishtail parameters we used in the pool. A 3D
+          fluid–structure model of the wavy whisker on its FBG base showed where
+          the flow load goes, and guided how we built the whisker.
+        </p>
+      </section>
+
+      <section class="section demo-intro" id="fishtail">
+        <div class="read">
+          <h2 class="section-heading">The fishtail wake</h2>
+          <p class="question">
+            Which stroke leaves a wake the whisker can read?
+          </p>
+          <p class="lede">
+            The fishtail is a NACA&nbsp;0012 foil. In the simulations it pitches
+            by ±<i>A</i> about a point at its head, following the joint motion
+            given by the URDF of our experimental fishtail; in the translating
+            runs that point also moves forward. It is not a model of a swimming
+            fish: the runs reproduce our experimental setup. All use
+            <i>A</i>&nbsp;=&nbsp;0.4&nbsp;rad; the fishtail either translates or is
+            held in place.
+          </p>
+          <div class="formula" role="math" aria-label="St equals f times A p-p, divided by U">
+            <p class="eq" aria-hidden="true">
+              <i>St</i><span class="eq-sign">=</span
+              ><span class="frac"
+                ><span><i>f</i>&#8201;·&#8201;<i>A</i><sub>p–p</sub></span
+                ><span><i>U</i></span></span
+              >
+            </p>
+            <dl class="symbols">
+              <div><dt><i>f</i></dt><dd>pitching frequency (Hz)</dd></div>
+              <div>
+                <dt><i>A</i><sub>p–p</sub></dt>
+                <dd>peak-to-peak amplitude of the tail tip (m)</dd>
+              </div>
+              <div><dt><i>U</i></dt><dd>swimming or translation speed (m/s)</dd></div>
+            </dl>
+          </div>
+          <p>
+            We chose the stroke by its Strouhal number, which sets the kind of
+            wake. Sharks, bony fish and dolphins cruise at
+            <i>St</i>&nbsp;≈&nbsp;0.2–0.4, where the wake is a reverse von Kármán
+            street; at higher <i>St</i> it becomes a meandering jet. In
+            simulation, <i>St</i>&nbsp;=&nbsp;0.2 sheds vortices far apart,
+            <i>St</i>&nbsp;=&nbsp;0.35 gives a regular reverse von Kármán street,
+            and <i>St</i>&nbsp;=&nbsp;0.7 a meandering jet, as does a fishtail
+            pitching in place (<i>U</i>&nbsp;=&nbsp;0). We used
+            <i>St</i>&nbsp;=&nbsp;0.35 (1.2&nbsp;Hz, 0.46&nbsp;m/s) in the towed
+            experiments.
+          </p>
+          <figure class="st-chart">
+            <div class="st-plot" role="img" aria-label="Strouhal numbers of nine families of swimming animals, all between 0.2 and 0.4: requiem sharks 0.27, mackerel 0.31, mullet 0.29, carp 0.28, trout and salmon 0.29, jack 0.31, bluefish 0.33, cod 0.30, dolphins 0.29.">
+              <span class="st-band" aria-hidden="true"></span>
+              <span class="st-legend" aria-hidden="true"
+                ><span><i class="mk shark"></i>Sharks</span
+                ><span><i class="mk bony"></i>Bony fish</span
+                ><span><i class="mk dolphin"></i>Dolphins</span></span
+              >
+              <span class="st-name">Requiem sharks</span
+              ><span class="st-track"
+                ><span class="st-bar" style="--lo: 0.23; --hi: 0.32"></span
+                ><i class="mk shark" style="--x: 0.27"></i
+              ></span>
+              <span class="st-name">Mackerel</span
+              ><span class="st-track"
+                ><span class="st-bar" style="--lo: 0.25; --hi: 0.36"></span
+                ><i class="mk bony" style="--x: 0.31"></i
+              ></span>
+              <span class="st-name">Mullet</span
+              ><span class="st-track"
+                ><span class="st-bar" style="--lo: 0.25; --hi: 0.33"></span
+                ><i class="mk bony" style="--x: 0.29"></i
+              ></span>
+              <span class="st-name">Carp</span
+              ><span class="st-track"
+                ><span class="st-bar" style="--lo: 0.23; --hi: 0.33"></span
+                ><i class="mk bony" style="--x: 0.28"></i
+              ></span>
+              <span class="st-name">Trout &amp; salmon</span
+              ><span class="st-track"
+                ><span class="st-bar" style="--lo: 0.2; --hi: 0.39"></span
+                ><i class="mk bony" style="--x: 0.29"></i
+              ></span>
+              <span class="st-name">Jack</span
+              ><span class="st-track"
+                ><span class="st-bar" style="--lo: 0.26; --hi: 0.35"></span
+                ><i class="mk bony" style="--x: 0.31"></i
+              ></span>
+              <span class="st-name">Bluefish</span
+              ><span class="st-track"
+                ><span class="st-bar" style="--lo: 0.28; --hi: 0.37"></span
+                ><i class="mk bony" style="--x: 0.33"></i
+              ></span>
+              <span class="st-name">Cod</span
+              ><span class="st-track"
+                ><span class="st-bar" style="--lo: 0.23; --hi: 0.38"></span
+                ><i class="mk bony" style="--x: 0.3"></i
+              ></span>
+              <span class="st-name">Dolphins</span
+              ><span class="st-track"
+                ><span class="st-bar" style="--lo: 0.25; --hi: 0.33"></span
+                ><i class="mk dolphin" style="--x: 0.29"></i
+              ></span>
+              <span></span><span class="st-axis" aria-hidden="true"><span style="--x: 0">0.0</span><span style="--x: 0.2">0.2</span><span style="--x: 0.4">0.4</span><span style="--x: 0.6">0.6</span><span style="--x: 0.8">0.8</span><span style="--x: 1.0">1.0</span></span>
+              <span></span><span class="st-unit" aria-hidden="true"><i>St</i></span>
+            </div>
+            <figcaption>
+              Strouhal numbers of nine families of swimming animals, all between
+              0.2 and 0.4. Redrawn from
+              <a href="https://doi.org/10.1038/nature02000" target="_blank" rel="noopener">Taylor et al., Nature 2003</a>.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="wrap">
+          <div class="tabs" role="tablist" aria-label="Fishtail runs">
+            <button
+              type="button"
+              role="tab"
+              id="tab-st02"
+              aria-controls="panel-st02"
+              aria-selected="false"
+              tabindex="-1"
+            >
+              <i>St</i>&nbsp;=&nbsp;0.2
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="tab-st035"
+              aria-controls="panel-st035"
+              aria-selected="true"
+            >
+              <i>St</i>&nbsp;=&nbsp;0.35
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="tab-st07"
+              aria-controls="panel-st07"
+              aria-selected="false"
+              tabindex="-1"
+            >
+              <i>St</i>&nbsp;=&nbsp;0.7
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="tab-fixed"
+              aria-controls="panel-fixed"
+              aria-selected="false"
+              tabindex="-1"
+            >
+              Fixed · <i>St</i>&nbsp;=&nbsp;∞
+            </button>
+          </div>
+
+          <div
+            id="panel-st02"
+            role="tabpanel"
+            aria-labelledby="tab-st02"
+            hidden
+          >
+            <figure class="demo">
+              <video
+                id="foil-st02"
+                class="demo-video"
+                muted
+                loop
+                playsinline
+                preload="none"
+                poster="static/images/foil_st02.jpg"
+                aria-label="Vorticity behind a fishtail translating at a Strouhal number of 0.2."
+              >
+                <source src="static/videos/foil_st02.mp4" type="video/mp4" />
+              </video>
+              <figcaption>
+                <i>St</i>&nbsp;=&nbsp;0.2: 0.6&nbsp;Hz, <i>A</i>&nbsp;=&nbsp;0.4&nbsp;rad, translating at
+                0.35&nbsp;m/s. The vortices are shed far apart. z-vorticity,
+                ±100&nbsp;s⁻¹.
+              </figcaption>
+              <div class="demo-tools">
+                <button type="button" class="motion-toggle" data-video="foil-st02">
+                  Play video
+                </button>
+              </div>
+            </figure>
+          </div>
+
+          <div id="panel-st035" role="tabpanel" aria-labelledby="tab-st035">
+            <figure class="demo">
+              <video
+                id="foil-st035"
+                class="demo-video"
+                muted
+                loop
+                playsinline
+                preload="none"
+                poster="static/images/foil_st035.jpg"
+                aria-label="Vorticity behind a fishtail translating at a Strouhal number of 0.35, leaving a regular reverse von Karman street."
+              >
+                <source src="static/videos/foil_st035.mp4" type="video/mp4" />
+              </video>
+              <figcaption>
+                <i>St</i>&nbsp;=&nbsp;0.35: 1.2&nbsp;Hz, <i>A</i>&nbsp;=&nbsp;0.4&nbsp;rad, translating at
+                0.46&nbsp;m/s, the stroke used in the towed experiments. A regular
+                reverse von Kármán street. z-vorticity, ±100&nbsp;s⁻¹.
+              </figcaption>
+              <div class="demo-tools">
+                <button type="button" class="motion-toggle" data-video="foil-st035">
+                  Play video
+                </button>
+              </div>
+            </figure>
+          </div>
+
+          <div
+            id="panel-st07"
+            role="tabpanel"
+            aria-labelledby="tab-st07"
+            hidden
+          >
+            <figure class="demo">
+              <video
+                id="foil-st07"
+                class="demo-video"
+                muted
+                loop
+                playsinline
+                preload="none"
+                poster="static/images/foil_st07.jpg"
+                aria-label="Vorticity behind a fishtail translating at a Strouhal number of 0.7."
+              >
+                <source src="static/videos/foil_st07.mp4" type="video/mp4" />
+              </video>
+              <figcaption>
+                <i>St</i>&nbsp;=&nbsp;0.7: 0.2&nbsp;Hz, <i>A</i>&nbsp;=&nbsp;0.4&nbsp;rad, translating at
+                0.03&nbsp;m/s. The foil barely advances between strokes, and the
+                wake becomes a meandering jet. z-vorticity, ±100&nbsp;s⁻¹.
+              </figcaption>
+              <div class="demo-tools">
+                <button type="button" class="motion-toggle" data-video="foil-st07">
+                  Play video
+                </button>
+              </div>
+            </figure>
+          </div>
+
+          <div
+            id="panel-fixed"
+            role="tabpanel"
+            aria-labelledby="tab-fixed"
+            hidden
+          >
+            <figure class="demo">
+              <video
+                id="foil-fixed"
+                class="demo-video"
+                muted
+                loop
+                playsinline
+                preload="none"
+                poster="static/images/foil_fixed_04.jpg"
+                aria-label="Vorticity around a fishtail pitching in place."
+              >
+                <source src="static/videos/foil_fixed_04.mp4" type="video/mp4" />
+              </video>
+              <figcaption>
+                Held in place (<i>St</i>&nbsp;=&nbsp;∞): 0.2&nbsp;Hz, <i>A</i>&nbsp;=&nbsp;0.4&nbsp;rad. A
+                meandering jet; each stroke sheds a vortex of alternating sign from
+                the trailing edge. z-vorticity, ±200&nbsp;s⁻¹.
+              </figcaption>
+              <div class="demo-tools">
+                <button type="button" class="motion-toggle" data-video="foil-fixed">
+                  Play video
+                </button>
+              </div>
+            </figure>
+          </div>
+        </div>
+        <div class="read">
+          <p>
+            Note the color ranges: ±100&nbsp;s⁻¹ for the translating runs and
+            ±200&nbsp;s⁻¹ for the fixed one.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="whisker">
+        <div class="read">
+          <h2 class="section-heading">The whisker in flow</h2>
+          <p class="question">Where does the load from the flow go?</p>
+          <p class="lede">
+            The 3D model is the wavy, tapered whisker on its base, with two FBGs
+            along the arms of the base cross. A steady fluid–structure
+            interaction (FSI) simulation in Simcenter STAR-CCM+ couples the flow,
+            solved with the k–ω SST turbulence model, to the deforming whisker.
+          </p>
+        </div>
+        <div class="wrap">
+          <figure>
+            <div class="grid cols-3 model">
+              <div class="panel">
+                <a class="zoom" href="static/images/model_domain.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/model_domain.webp"
+                    width="1067"
+                    height="813"
+                    alt="Cylindrical fluid domain with the small whisker model inside."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>Fluid domain</p>
+              </div>
+              <div class="panel">
+                <a class="zoom" href="static/images/model_geometry.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/model_geometry.webp"
+                    width="1600"
+                    height="951"
+                    alt="CAD model of the wavy whisker standing on its base, a plate with a raised cross whose arms carry the FBGs."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>Whisker and base</p>
+              </div>
+              <div class="panel">
+                <a class="zoom" href="static/images/model_contact.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/model_contact.webp"
+                    width="883"
+                    height="626"
+                    alt="Close-up of the whisker root joining the base cross, showing the contact surfaces."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>Whisker root</p>
+              </div>
+            </div>
+            <figcaption>
+              The fluid domain is a cylinder 600&nbsp;mm in diameter reaching
+              400&nbsp;mm upstream and 800&nbsp;mm downstream, with a velocity
+              inlet and a pressure outlet. At the whisker root on the base cross,
+              FSI and contact interfaces join the whisker, its NiTi core, the
+              FBGs and the base.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="read">
+          <div class="table-wrap">
+            <table>
+              <caption>
+                Materials in the refined model
+              </caption>
+              <thead>
+                <tr>
+                  <th>Part</th>
+                  <th>Material</th>
+                  <th class="num">E</th>
+                  <th class="num">ν</th>
+                  <th class="num">ρ (kg/m³)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Base</td>
+                  <td>VeroWhite</td>
+                  <td class="num">3&nbsp;GPa</td>
+                  <td class="num">0.40</td>
+                  <td class="num">1180</td>
+                </tr>
+                <tr>
+                  <td>Core</td>
+                  <td>NiTi</td>
+                  <td class="num">60&nbsp;GPa</td>
+                  <td class="num">0.33</td>
+                  <td class="num">6450</td>
+                </tr>
+                <tr>
+                  <td>Whisker shell</td>
+                  <td>Rubber, Shore 50A</td>
+                  <td class="num">2&nbsp;MPa</td>
+                  <td class="num">0.49</td>
+                  <td class="num">1200</td>
+                </tr>
+                <tr>
+                  <td>Sensor</td>
+                  <td>FBG fiber</td>
+                  <td class="num">75&nbsp;GPa</td>
+                  <td class="num">0.30</td>
+                  <td class="num">2200</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">
+            The rubber was also modeled as hyperelastic (Mooney–Rivlin,
+            C<sub>10</sub>&nbsp;=&nbsp;0.183&nbsp;MPa,
+            C<sub>01</sub>&nbsp;=&nbsp;0.046&nbsp;MPa,
+            K&nbsp;=&nbsp;1000&nbsp;MPa); the linear and hyperelastic models gave
+            similar results.
+          </p>
+        </div>
+        <div class="wrap">
+          <details class="evidence">
+            <summary>
+              Mesh
+              <span>Polyhedral cells, prism layers, wake refinement</span>
+            </summary>
+            <div class="read">
+              <p>
+                Polyhedral cells fill the fluid, the solid parts get a finer
+                mesh, and two prism layers on the walls (0.02&nbsp;mm in total)
+                give a wall y+ of about 1. The baseline mesh has 2.75&nbsp;M
+                cells (0.71&nbsp;M fluid, 2.04&nbsp;M solid). Refining the wake to a 10% cell size (10.75&nbsp;M cells)
+                resolves the wake behind the base but not behind the whisker; a
+                2% refinement (18.4&nbsp;M cells) resolves both.
+              </p>
+            </div>
+            <figure>
+              <div class="grid cols-3">
+                <a class="zoom" href="static/images/mesh_section.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/mesh_section.webp"
+                    width="710"
+                    height="690"
+                    alt="Section through the polyhedral mesh around the whisker and base."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <a class="zoom" href="static/images/mesh_base.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/mesh_base.webp"
+                    width="790"
+                    height="685"
+                    alt="Mesh detail where the whisker meets the base."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <a class="zoom" href="static/images/mesh_whisker.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/mesh_whisker.webp"
+                    width="460"
+                    height="639"
+                    alt="Surface mesh of the whisker."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+              </div>
+              <div class="grid cols-2 spaced">
+                <a class="zoom" href="static/images/wall_yplus.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/wall_yplus.webp"
+                    width="1600"
+                    height="684"
+                    alt="Wall y-plus on the whisker and base surfaces."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <a class="zoom scene" href="static/images/wake_long.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/wake_long.webp"
+                    width="1158"
+                    height="469"
+                    alt="Side view of vorticity with the 10 percent wake refinement: a long wake behind the base."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+              </div>
+              <figcaption>
+                Mesh section, base detail and whisker surface mesh; wall y+; and
+                vorticity with the 10% wake refinement, which captures the long
+                wake behind the base.
+              </figcaption>
+            </figure>
+          </details>
+        </div>
+
+        <div class="read">
+          <h3>The flow field</h3>
+          <p>
+            At 0.3&nbsp;m/s inflow, the flow wraps around the whisker and the
+            raised cross of the base. The whisker sits off-center on the base,
+            so the flow around the base is uneven. Vorticity is larger toward
+            the tip of the whisker.
+          </p>
+        </div>
+        <div class="wrap">
+          <figure>
+            <div class="grid cols-2 flow">
+              <div class="panel">
+                <a class="zoom scene" href="static/images/flow_velocity.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/flow_velocity.webp"
+                    width="1023"
+                    height="758"
+                    alt="Side view of the y velocity component around the whisker and base at 0.3 meters per second inflow, with its color scale from minus 0.378 to 0.116 meters per second. Slowed flow wraps the base unevenly."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>Velocity, y component</p>
+              </div>
+              <div class="panel">
+                <a class="zoom scene" href="static/images/flow_vorticity.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/flow_vorticity.webp"
+                    width="654"
+                    height="669"
+                    alt="Side view of vorticity magnitude around the whisker and base, with its color scale from 0 to above 120 per second. Vorticity is larger near the tip than along the middle of the whisker."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>Vorticity magnitude</p>
+              </div>
+            </div>
+            <figcaption>
+              Side view, flow from left to right at 0.3&nbsp;m/s. The velocity
+              map shows the y component, −0.3&nbsp;m/s in the free stream; red
+              marks slowed or reversed flow.
+            </figcaption>
+          </figure>
+          <figure>
+            <a class="zoom scene" href="static/images/wake_side.webp" aria-label="Enlarge figure"
+              ><img
+                src="static/images/wake_side.webp"
+                width="1356"
+                height="543"
+                alt="Side view of vorticity with the refined wake mesh, showing vortices shed along the length of the whisker."
+                loading="lazy"
+                decoding="async"
+            /></a>
+            <div class="grid cols-4 spaced slices">
+              <div class="panel">
+                <a class="zoom scene" href="static/images/slice_z0217.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/slice_z0217.webp"
+                    width="705"
+                    height="486"
+                    alt="Horizontal vorticity slice through the base cross."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>z = 0.217&nbsp;m</p>
+              </div>
+              <div class="panel">
+                <a class="zoom scene" href="static/images/slice_z024.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/slice_z024.webp"
+                    width="787"
+                    height="543"
+                    alt="Horizontal vorticity slice above the base."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>z = 0.24&nbsp;m</p>
+              </div>
+              <div class="panel">
+                <a class="zoom scene" href="static/images/slice_z025.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/slice_z025.webp"
+                    width="738"
+                    height="509"
+                    alt="Horizontal vorticity slice further up the whisker."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>z = 0.25&nbsp;m</p>
+              </div>
+              <div class="panel">
+                <a class="zoom scene" href="static/images/slice_z030.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/slice_z030.webp"
+                    width="676"
+                    height="466"
+                    alt="Horizontal vorticity slice near the whisker tip, showing a narrow wake."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>z = 0.30&nbsp;m</p>
+              </div>
+            </div>
+            <figcaption>
+              With the 2% wake refinement, vortices are shed along the whole
+              whisker (side view). Below it, horizontal slices of vorticity
+              magnitude from the base cross toward the tip, 0–120&nbsp;s⁻¹
+              (0–180&nbsp;s⁻¹ at z&nbsp;=&nbsp;0.30&nbsp;m). The wake is more
+              regular away from the base.
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="read">
+          <h3>Most of the bending stays in the whisker</h3>
+          <p>
+            A first round of runs used a thinner, 0.2&nbsp;mm NiTi core and swept
+            the inflow from 0.01 to 0.19&nbsp;m/s. At 0.19&nbsp;m/s the whisker
+            bends by about 25&nbsp;mm, while the base, where the FBGs sit, moves
+            by only micrometers. The base displacement grows quadratically with
+            flow speed.
+          </p>
+        </div>
+        <div class="wrap">
+          <figure>
+            <div class="grid sweep">
+              <div class="panel">
+                <a class="zoom" href="static/images/sweep_deflection.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/sweep_deflection.webp"
+                    width="825"
+                    height="620"
+                    alt="Side view of the whisker bent by the flow at 0.19 meters per second; the base below is almost undeformed."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>Whisker deflection: about 25&nbsp;mm</p>
+              </div>
+              <div class="panel">
+                <a class="zoom" href="static/images/sweep_base.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/sweep_base.webp"
+                    width="1600"
+                    height="807"
+                    alt="Close-up of the base cross at 0.19 meters per second colored by displacement magnitude, with two probe points near the whisker root reading 1.9 and 0.57 micrometers."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>Base cross displacement: 0–0.0025&nbsp;mm</p>
+              </div>
+            </div>
+            <a class="zoom sweep-plot" href="static/images/sweep_plot.webp" aria-label="Enlarge figure"
+              ><img
+                src="static/images/sweep_plot.webp"
+                width="1200"
+                height="498"
+                alt="Plot of the displacement at the two probe points against inflow velocity from 0.01 to 0.19 meters per second, each with a quadratic fit, R squared 0.9994 and 0.9993."
+                loading="lazy"
+                decoding="async"
+            /></a>
+            <figcaption>
+              First-round model (0.2&nbsp;mm core) at 0.19&nbsp;m/s, displacement
+              magnitude. The two probe points near the whisker root read 1.9 and
+              0.57&nbsp;µm; the plot shows their displacement, in millimeters,
+              against inflow speed, with quadratic fits (R²&nbsp;≥&nbsp;0.999).
+            </figcaption>
+          </figure>
+        </div>
+        <div class="read">
+          <p>
+            Because the whisker takes the bending, a larger FBG reading has to
+            come from how the whisker is built and joined to the base. That is
+            what the design study explores.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="design">
+        <div class="read">
+          <h2 class="section-heading">Design study</h2>
+          <p class="question">
+            Can the FBG read more while the whisker keeps its stiffness?
+          </p>
+          <p class="lede">
+            The goal was to increase the FBG displacement, the sensor's
+            reading, while maintaining the whisker's stiffness, especially at the
+            tip. Starting from the
+            reference design (100&nbsp;mm whisker, 0.4&nbsp;mm NiTi core running
+            through to the base, FBG 2&nbsp;mm above the base), each run changes
+            one feature. All runs are at 0.3&nbsp;m/s.
+          </p>
+        </div>
+        <div class="wrap">
+          <figure>
+            <div class="grid cols-2">
+              <div class="panel">
+                <a class="zoom" href="static/images/fbg_disp_along.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/fbg_disp_along.webp"
+                    width="1600"
+                    height="684"
+                    alt="Base cross of the reference design colored by displacement along the flow; the displacement is concentrated on the arms of the cross."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>Along the flow, −1×10⁻⁴ to 1.5×10⁻⁵&nbsp;mm</p>
+              </div>
+              <div class="panel">
+                <a class="zoom" href="static/images/fbg_disp_across.webp" aria-label="Enlarge figure"
+                  ><img
+                    src="static/images/fbg_disp_across.webp"
+                    width="1600"
+                    height="684"
+                    alt="Base cross of the reference design colored by displacement across the flow; the arms carry displacements of both signs."
+                    loading="lazy"
+                    decoding="async"
+                /></a>
+                <p>Across the flow, ±1×10⁻⁵&nbsp;mm</p>
+              </div>
+            </div>
+            <figcaption>
+              What the FBGs read: displacement of the base cross in the
+              reference design at 0.3&nbsp;m/s. The FBGs run along the arms of
+              the cross; each reading is the largest displacement sampled along
+              the fiber.
+            </figcaption>
+          </figure>
+          <figure>
+            <div class="cases">
+              <figure class="case">
+                <a class="zoom scene" href="static/images/case_1.webp" aria-label="Enlarge figure"
+                  ><img src="static/images/case_1.webp" width="599" height="697" alt="Vorticity around the reference design." loading="lazy" decoding="async"
+                /></a>
+                <figcaption><b>1</b> Reference</figcaption>
+              </figure>
+              <figure class="case">
+                <a class="zoom scene" href="static/images/case_3.webp" aria-label="Enlarge figure"
+                  ><img src="static/images/case_3.webp" width="433" height="503" alt="Vorticity with the core ending at the FBG." loading="lazy" decoding="async"
+                /></a>
+                <figcaption><b>3</b> Core ends at the FBG</figcaption>
+              </figure>
+              <figure class="case">
+                <a class="zoom scene" href="static/images/case_3b.webp" aria-label="Enlarge figure"
+                  ><img src="static/images/case_3b.webp" width="676" height="786" alt="Vorticity with the core ending at the FBG and a 1 millimeter gap." loading="lazy" decoding="async"
+                /></a>
+                <figcaption><b>3′</b> Core ends at the FBG, 1&nbsp;mm gap</figcaption>
+              </figure>
+              <figure class="case">
+                <a class="zoom scene" href="static/images/case_4.webp" aria-label="Enlarge figure"
+                  ><img src="static/images/case_4.webp" width="374" height="435" alt="Vorticity with a 4 millimeter gap between FBG and base." loading="lazy" decoding="async"
+                /></a>
+                <figcaption><b>4</b> FBG gap 4&nbsp;mm</figcaption>
+              </figure>
+              <figure class="case">
+                <a class="zoom scene" href="static/images/case_4b.webp" aria-label="Enlarge figure"
+                  ><img src="static/images/case_4b.webp" width="388" height="451" alt="Vorticity with a 1 millimeter gap between FBG and base." loading="lazy" decoding="async"
+                /></a>
+                <figcaption><b>4′</b> FBG gap 1&nbsp;mm</figcaption>
+              </figure>
+              <figure class="case">
+                <a class="zoom scene" href="static/images/case_5.webp" aria-label="Enlarge figure"
+                  ><img src="static/images/case_5.webp" width="419" height="487" alt="Vorticity with a core tapered from 0.8 to 0.2 millimeters." loading="lazy" decoding="async"
+                /></a>
+                <figcaption><b>5</b> Tapered core, 0.8→0.2&nbsp;mm</figcaption>
+              </figure>
+              <figure class="case">
+                <a class="zoom scene" href="static/images/case_6.webp" aria-label="Enlarge figure"
+                  ><img src="static/images/case_6.webp" width="340" height="395" alt="Vorticity around a 200 millimeter whisker with a 0.4 millimeter core, visibly bent by the flow." loading="lazy" decoding="async"
+                /></a>
+                <figcaption><b>6</b> 200&nbsp;mm whisker, 0.4&nbsp;mm core</figcaption>
+              </figure>
+              <figure class="case">
+                <a class="zoom scene" href="static/images/case_6b.webp" aria-label="Enlarge figure"
+                  ><img src="static/images/case_6b.webp" width="442" height="514" alt="Vorticity around a 200 millimeter whisker with a 0.67 millimeter core." loading="lazy" decoding="async"
+                /></a>
+                <figcaption><b>6′</b> 200&nbsp;mm whisker, 0.67&nbsp;mm core</figcaption>
+              </figure>
+            </div>
+            <figcaption>
+              Vorticity magnitude for each design, side view, 0.3&nbsp;m/s.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="wrap">
+          <p class="table-title" id="summary-title">
+            Simulation cases for the tapered wavy whisker
+          </p>
+          <div class="table-wrap">
+            <table class="summary" aria-labelledby="summary-title">
+              <thead>
+                <tr>
+                  <th rowspan="2" scope="col">No.</th>
+                  <th rowspan="2" scope="col">Change</th>
+                  <th colspan="2" scope="colgroup">Max. displacement Y, along flow</th>
+                  <th colspan="2" scope="colgroup">Max. displacement X, across flow</th>
+                  <th colspan="2" scope="colgroup">Vorticity</th>
+                </tr>
+                <tr>
+                  <th scope="col">Value (mm)</th>
+                  <th scope="col">Increase (%)</th>
+                  <th scope="col">Value (mm)</th>
+                  <th scope="col">Increase (%)</th>
+                  <th scope="col">Whisker</th>
+                  <th scope="col">Base</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="ref">
+                  <td>1</td>
+                  <td>Reference</td>
+                  <td>−5.9668×10⁻⁵</td>
+                  <td>/</td>
+                  <td>−1.6489×10⁻⁶</td>
+                  <td>/</td>
+                  <td colspan="2">ref.</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>Core ends at the FBG</td>
+                  <td>5.0205×10⁻⁵</td>
+                  <td class="worse">−15.86</td>
+                  <td>1.8992×10⁻⁵</td>
+                  <td class="better">1051.80</td>
+                  <td><span class="worse">↑</span> (tip&nbsp;end&nbsp;<span class="better">↓</span>)</td>
+                  <td><span class="better">↓</span></td>
+                </tr>
+                <tr>
+                  <td>3′</td>
+                  <td>Core ends at the FBG, 1&nbsp;mm gap</td>
+                  <td>4.7894×10⁻⁵</td>
+                  <td class="worse">−19.73</td>
+                  <td>1.7646×10⁻⁵</td>
+                  <td class="better">970.17</td>
+                  <td><span class="better">↓↓↓</span></td>
+                  <td><span class="better">↓↓</span></td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>FBG gap 4&nbsp;mm</td>
+                  <td>−4.3407×10⁻⁵</td>
+                  <td class="worse">−27.25</td>
+                  <td>4.5128×10⁻⁶</td>
+                  <td class="better">173.69</td>
+                  <td><span class="better">↓</span></td>
+                  <td><span class="worse">↑</span></td>
+                </tr>
+                <tr>
+                  <td>4′</td>
+                  <td>FBG gap 1&nbsp;mm</td>
+                  <td>−7.6022×10⁻⁵</td>
+                  <td class="better">27.41</td>
+                  <td>−8.8737×10⁻⁶</td>
+                  <td class="better">438.16</td>
+                  <td><span class="better">↓↓</span></td>
+                  <td><span class="better">↓↓↓</span></td>
+                </tr>
+                <tr>
+                  <td>5</td>
+                  <td>Tapered core, 0.8→0.2&nbsp;mm</td>
+                  <td>−7.5024×10⁻⁵</td>
+                  <td class="better">25.74</td>
+                  <td>−3.8713×10⁻⁶</td>
+                  <td class="better">134.78</td>
+                  <td><span class="better">↓↓↓</span></td>
+                  <td><span class="better">↓</span></td>
+                </tr>
+                <tr>
+                  <td>6</td>
+                  <td>200&nbsp;mm whisker, 0.4&nbsp;mm core</td>
+                  <td>−3.0025×10⁻⁴</td>
+                  <td class="better">403.20</td>
+                  <td>−1.7281×10⁻⁵</td>
+                  <td class="better">948.03</td>
+                  <td><span class="worse">↑↑</span></td>
+                  <td><span class="better">↓↓</span></td>
+                </tr>
+                <tr>
+                  <td>6′</td>
+                  <td>200&nbsp;mm whisker, 0.67&nbsp;mm core</td>
+                  <td>−4.3809×10⁻⁴</td>
+                  <td class="better">634.21</td>
+                  <td>−3.9053×10⁻⁵</td>
+                  <td class="better">2268.43</td>
+                  <td><span class="worse">↑</span></td>
+                  <td><span class="better">↓</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="read">
+          <p class="table-note">
+            <span class="better">Blue</span> marks a better result and
+            <span class="worse">red</span> a worse one: a larger FBG
+            displacement, or less vorticity (↓). Increase is the change in
+            magnitude from the reference; across-flow readings start about 36
+            times smaller, so their percentages run large. Preliminary: a
+            simple decoupled analysis of steady runs changing one feature at a
+            time, without a grid-independence check. The cases with the core ending at the FBG (3, 3′) were not
+            validated, and vorticity changes greatly once coupled effects are
+            included.
+          </p>
+          <h3>Findings</h3>
+          <ul class="findings">
+            <li>
+              <b>Tapered core.</b> A core tapered from 0.8 to 0.2&nbsp;mm raised
+              both FBG readings while the whisker deflected less.
+            </li>
+            <li>
+              <b>FBG–base gap.</b> The gap reshapes the vortices around the base.
+              A 1&nbsp;mm gap raised both readings and reduced vorticity; a
+              4&nbsp;mm gap lowered the along-flow reading.
+            </li>
+            <li>
+              <b>Where the core ends.</b> Ending the core at the FBG instead of the
+              base gave no gain along the flow but raised the across-flow reading
+              more than tenfold.
+            </li>
+            <li>
+              <b>Whisker length.</b> A 200&nbsp;mm whisker read more, but with the
+              same 0.4&nbsp;mm core it was about 8 times softer, and its readings
+              dropped once normalized by stiffness. With a 0.67&nbsp;mm core the
+              stiffness stayed similar and the readings still rose, with
+              stronger vortices near the tip.
+            </li>
+            <li>
+              <b>FBG position.</b> Each layout has its own best FBG position, and
+              the whisker's curvature matters little, so the layout is fixed
+              first and the FBG position second.
+            </li>
+          </ul>
+          <p>
+            These comparisons guided the fabrication parameters of the whisker.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="notes">
+        <div class="read qa">
+          <h2 class="section-heading">Notes</h2>
+          <details>
+            <summary>Limitations</summary>
+            <p>
+              Read the numbers as trends. The 3D runs are steady (RANS, k–ω SST),
+              so they do not resolve vortex shedding or whisker vibration in
+              time. Grid independence was not verified; across mesh settings,
+              displacements agreed within 10%. Each design run changes one
+              feature at a time, and the vorticity changes considerably once
+              features are combined.
+            </p>
+          </details>
+          <details>
+            <summary>2D fishtail model</summary>
+            <p>
+              A 2D section shows the shedding pattern of each stroke at low cost.
+              It leaves out 3D effects such as vortices from the fishtail's tip.
+            </p>
+          </details>
+          <details>
+            <summary>Not covered here</summary>
+            <p>
+              A prototype check of the 1&nbsp;mm-gap design, other whisker shapes
+              (cylindrical and non-tapered), other flow directions, and unsteady
+              runs that couple the pitching fishtail to the 3D whisker.
+            </p>
+          </details>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>
+      Last updated October 2026 · Simulations in Simcenter STAR-CCM+ (3D) and
+      Ansys 2024 R1 (2D).
+    </footer>
+
+    <div
+      class="lightbox"
+      id="lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Enlarged figure"
+    >
+      <button type="button" aria-label="Close">×</button>
+      <img alt="" />
+    </div>
+
+    <script src="project.js"></script>
+  </body>
+</html>

@@ -1,0 +1,937 @@
+/* FBG Whisker CFD page. Typography, hero, nav and section rhythm follow the
+   Fluorescent Whisker project page (fluorescent-whisker.github.io). */
+:root {
+  --paper: #fff;
+  --paper-2: #f7f7f7;
+  --ink: #303030;
+  --muted: #707070;
+  --rule: #e5e5e5;
+  --accent: #2d68b0;
+  --scene: rgb(31, 54, 164); /* background of the STAR-CCM+ scalar scenes */
+  --vort-pos: #ff4d3d;
+  --vort-neg: #3d8bff;
+  --max: 1040px;
+  --read: 860px;
+  --font: "Noto Sans", Arial, sans-serif;
+  --serif: "Castoro", Georgia, serif;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #fff;
+  font: 17px/1.75 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+a {
+  color: inherit;
+  text-decoration-color: #bbb;
+  text-underline-offset: 4px;
+}
+a:hover {
+  color: var(--accent);
+}
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+}
+img,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+}
+h2 {
+  font-size: 36px;
+  margin-bottom: 14px;
+}
+h3 {
+  font-size: 24px;
+  margin: 36px 0 12px;
+}
+p {
+  margin: 0 0 1em;
+}
+button {
+  font: inherit;
+}
+sup {
+  font-size: 0.65em;
+}
+figure {
+  margin: 34px 0;
+}
+figcaption {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 14px auto 0;
+  text-align: center;
+  max-width: 850px;
+}
+
+/* ---------- hero ---------- */
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 36px;
+}
+.hero-inner {
+  max-width: 1240px;
+  text-align: center;
+  padding: 56px 32px 0;
+}
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffffff99;
+}
+.hero h1 {
+  font-size: clamp(36px, 3.4vw, 50px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.hero h1 span {
+  display: block;
+}
+.hero-media {
+  position: relative;
+  width: min(100%, 1040px);
+  aspect-ratio: 2.3;
+  overflow: hidden;
+  margin-top: 18px;
+}
+.hero video,
+.hero-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 60% 50%;
+}
+.hero-media:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, #000, transparent 6%, transparent 94%, #000),
+    linear-gradient(180deg, #000, transparent 14%, transparent 86%, #000);
+}
+.hero-foot {
+  width: min(100%, 1040px);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  color: #ffffffb3;
+}
+.hero-foot p {
+  margin: 0;
+}
+/* The hero loop shows the fixed run, then the translating run; project.js
+   marks the one on screen. */
+.runs[data-on] > span {
+  transition: color 0.3s;
+}
+.runs[data-on="fixed"] .run-translating,
+.runs[data-on="translating"] .run-fixed {
+  color: #ffffff59;
+}
+.runs[data-on="fixed"] .run-fixed,
+.runs[data-on="translating"] .run-translating {
+  color: #fff;
+}
+.key {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-left: 14px;
+}
+.key i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+.key .pos {
+  background: var(--vort-pos);
+}
+.key .neg {
+  background: var(--vort-neg);
+}
+.hero-meta {
+  max-width: 1100px;
+  padding: 0 24px;
+  text-align: center;
+}
+.authors {
+  font-size: 17px;
+  line-height: 1.9;
+  margin: 22px auto 8px;
+}
+.affil {
+  font-size: 15px;
+  color: #ffffffd9;
+  margin: 3px 0;
+}
+.motion-toggle {
+  flex-shrink: 0;
+  white-space: nowrap;
+  color: inherit;
+  background: transparent;
+  border: 1px solid #ffffff55;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.motion-toggle:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+/* ---------- sticky section nav ---------- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #fffffff2;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--rule);
+}
+.nav ul {
+  list-style: none;
+  max-width: var(--max);
+  padding: 0 20px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 26px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav a {
+  display: block;
+  padding: 18px 0 16px;
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: 13px;
+  color: #656565;
+}
+.nav a.active {
+  color: #222;
+  border-bottom-color: #777;
+}
+.nav a:hover {
+  color: #111;
+}
+
+/* ---------- sections ---------- */
+.wrap {
+  max-width: var(--max);
+  margin: auto;
+}
+.read {
+  max-width: var(--read);
+  margin: auto;
+}
+.section {
+  padding: 78px 28px 80px;
+}
+.section + .section > .read:first-child:before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: var(--rule);
+  margin: -78px 0 70px;
+}
+.section-heading {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.question {
+  font: italic 24px/1.45 var(--serif);
+  letter-spacing: -0.015em;
+  color: #666;
+  text-align: center;
+  margin: 0 auto 28px;
+}
+.section .lede {
+  font-size: 17px;
+  color: var(--ink);
+}
+.statement {
+  padding: 84px 28px 34px;
+  text-align: center;
+}
+.statement h2 {
+  font-size: clamp(29px, 3vw, 40px);
+  line-height: 1.3;
+  margin: 0 auto 25px;
+  max-width: 920px;
+}
+.statement h2 em {
+  font-family: var(--serif);
+  font-weight: 400;
+}
+.statement > p {
+  max-width: 850px;
+  font-size: 21px;
+  line-height: 1.65;
+  margin: 0 auto;
+  color: #555;
+}
+
+/* ---------- demos and run tabs ---------- */
+.section.demo-intro {
+  padding-top: 48px;
+}
+.demo {
+  margin: 0 0 28px;
+}
+.demo video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #fff;
+  border: 1px solid var(--rule);
+}
+.demo-tools {
+  text-align: center;
+  margin: 10px 0 0;
+}
+.demo-tools .motion-toggle {
+  color: #666;
+  border-color: #ddd;
+}
+.demo-tools .motion-toggle:hover {
+  color: #222;
+  border-color: #aaa;
+}
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 22px;
+}
+.tabs [role="tab"] {
+  border: 1px solid #d5d5d5;
+  border-radius: 20px;
+  background: #fff;
+  color: #555;
+  padding: 7px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.tabs [role="tab"]:hover {
+  border-color: #999;
+  color: #222;
+}
+.tabs [role="tab"][aria-selected="true"] {
+  background: #222;
+  border-color: #222;
+  color: #fff;
+}
+
+/* ---------- collapsible evidence ---------- */
+.evidence {
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  margin: 32px auto 0;
+}
+.evidence summary {
+  cursor: pointer;
+  font-size: 15px;
+  padding: 16px 0;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-weight: 500;
+}
+.evidence summary:after {
+  content: "+";
+  color: #777;
+}
+.evidence[open] summary:after {
+  content: "−";
+}
+.evidence summary::-webkit-details-marker {
+  display: none;
+}
+.evidence > summary span {
+  margin-left: auto;
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 13px;
+}
+.evidence figure {
+  margin-top: 16px;
+}
+.evidence .read p {
+  font-size: 15px;
+  color: #555;
+}
+
+/* ---------- figures ---------- */
+.zoom {
+  display: block;
+  cursor: zoom-in;
+}
+figure img {
+  width: 100%;
+}
+figure.narrow {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.scene {
+  background: var(--scene);
+}
+.grid {
+  display: grid;
+  gap: 14px;
+  align-items: center;
+}
+.grid.spaced {
+  margin-top: 14px;
+}
+.grid.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.grid.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.grid.cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+/* column widths follow each image's aspect ratio so the row shares one height */
+.grid.model {
+  grid-template-columns: 1.31fr 1.68fr 1.41fr;
+}
+.grid.flow {
+  grid-template-columns: 1.35fr 0.98fr;
+  align-items: start;
+}
+.grid.sweep {
+  grid-template-columns: 2fr 3fr;
+}
+.sweep-plot {
+  max-width: 720px;
+  margin: 14px auto 0;
+}
+.panel p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+.cases {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px 14px;
+}
+.case {
+  margin: 0;
+}
+.case img {
+  aspect-ratio: 0.86;
+  object-fit: contain;
+}
+.case figcaption {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #555;
+}
+.case figcaption b {
+  margin-right: 4px;
+  color: #222;
+}
+
+/* ---------- tables and lists ---------- */
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 16px 0 10px;
+}
+caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  padding-bottom: 6px;
+}
+th,
+td {
+  text-align: left;
+  padding: 11px 10px;
+  border-bottom: 1px solid var(--rule);
+}
+th {
+  font-weight: 500;
+  color: #666;
+}
+td.num,
+th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* design-study summary, laid out like the summary table in Siyue's slides:
+   framed grid, shaded two-row header, blue for better and red for worse */
+.table-title {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+table.summary {
+  border: 2px solid #333;
+  font-size: 13.5px;
+}
+.summary th,
+.summary td {
+  text-align: center;
+  padding: 9px 10px;
+  border: 1px solid #d6d6d6;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.summary thead th {
+  background: #f2f2f2;
+  color: #333;
+  font-weight: 600;
+}
+.summary thead tr:last-child th,
+.summary thead th[rowspan],
+.summary tr.ref td {
+  border-bottom: 2px solid #333;
+}
+.summary td:nth-child(2) {
+  white-space: normal;
+  min-width: 11em;
+}
+td.better,
+td.worse {
+  font-weight: 700;
+}
+.better {
+  color: #1a35e8;
+}
+.worse {
+  color: #e3241b;
+}
+.table-note {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 1.6em;
+}
+.findings {
+  padding-left: 1.1em;
+  margin: 0 0 1.2em;
+}
+.findings li {
+  margin-bottom: 0.7em;
+}
+
+/* ---------- Strouhal number: display formula and the Taylor et al. chart ---------- */
+.formula {
+  margin: 26px 0 24px;
+  text-align: center;
+}
+.eq {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  margin: 0;
+  font: italic 32px/1 var(--serif);
+  color: var(--ink);
+}
+.eq-sign {
+  font-style: normal;
+}
+.eq sub {
+  font-size: 0.5em;
+}
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+.frac > span {
+  padding: 0.08em 0.2em;
+}
+.frac > span:first-child {
+  border-bottom: 1.5px solid currentColor;
+}
+.symbols {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 26px;
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.symbols > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.symbols dt {
+  font: italic 16px var(--serif);
+  color: var(--ink);
+}
+.symbols dd {
+  margin: 0;
+}
+.st-chart {
+  max-width: 720px;
+  margin: 28px auto 34px;
+}
+.st-plot {
+  --name: 8.6em;
+  --row: 28px;
+  --gap: 0px;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--name) minmax(0, 1fr);
+  align-items: center;
+  row-gap: var(--gap);
+  font-size: 13.5px;
+  line-height: 1.3;
+}
+.st-band {
+  position: absolute;
+  top: 0;
+  height: calc(9 * var(--row) + 8 * var(--gap));
+  left: calc(var(--name) + (100% - var(--name)) * 0.2);
+  width: calc((100% - var(--name)) * 0.2);
+  background: #2d68b014;
+  border-left: 1px dashed #2d68b099;
+  border-right: 1px dashed #2d68b099;
+}
+.st-legend {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.st-legend > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.st-name {
+  padding-right: 12px;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.st-track {
+  position: relative;
+  height: var(--row);
+  border-left: 1px solid #bbb;
+}
+.st-bar {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--lo) * 100%);
+  width: calc((var(--hi) - var(--lo)) * 100%);
+  border-top: 1.5px solid var(--ink);
+}
+.st-bar::before,
+.st-bar::after {
+  content: "";
+  position: absolute;
+  top: -5.5px;
+  height: 9px;
+  border-left: 1.5px solid var(--ink);
+}
+.st-bar::before {
+  left: 0;
+}
+.st-bar::after {
+  right: 0;
+}
+.mk {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--x) * 100%);
+  width: 11px;
+  height: 11px;
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+}
+.st-legend .mk {
+  position: static;
+  transform: none;
+}
+.mk.bony {
+  background: var(--ink);
+}
+.mk.shark {
+  background: #8c8c8c;
+}
+.mk.dolphin {
+  background: #fff;
+  border: 1.5px solid var(--ink);
+}
+.st-axis {
+  position: relative;
+  height: 24px;
+  border-top: 1px solid #bbb;
+  font-size: 12px;
+  color: var(--muted);
+}
+.st-axis span {
+  position: absolute;
+  top: 5px;
+  left: calc(var(--x) * 100%);
+  transform: translateX(-50%);
+}
+.st-axis span::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  height: 4px;
+  border-left: 1px solid #bbb;
+}
+.st-unit {
+  text-align: center;
+  font: italic 14px var(--serif);
+  color: var(--muted);
+}
+
+/* ---------- notes (Q&A) ---------- */
+.qa details {
+  border-top: 1px solid var(--rule);
+  padding: 7px 0;
+}
+.qa details:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+.qa summary {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: 16px;
+  font-weight: 500;
+  list-style: none;
+  padding: 14px 0;
+}
+.qa summary:after {
+  content: "+";
+  color: #999;
+}
+.qa details[open] summary:after {
+  content: "−";
+}
+.qa details p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #555;
+  padding: 0 20px 10px 0;
+}
+.qa summary::-webkit-details-marker {
+  display: none;
+}
+
+/* ---------- lightbox ---------- */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #070c16eb;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 35px;
+  cursor: zoom-out;
+}
+.lightbox.open {
+  display: flex;
+}
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  background: #fff;
+}
+.lightbox button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  border: 0;
+  color: white;
+  background: none;
+  font: 32px/1 var(--font);
+  padding: 10px;
+  cursor: pointer;
+}
+
+footer {
+  padding: 36px 24px 44px;
+  border-top: 1px solid var(--rule);
+  font-size: 12px;
+  text-align: center;
+  color: #888;
+  line-height: 1.9;
+}
+
+@media (max-width: 800px) {
+  .hero {
+    padding-bottom: 30px;
+  }
+  .hero-inner {
+    padding: 52px 26px 0;
+  }
+  .hero h1 {
+    font-size: 34px;
+  }
+  .hero-media {
+    aspect-ratio: 16 / 9;
+  }
+  .hero-foot {
+    padding: 8px 24px 0;
+    font-size: 11px;
+    align-items: flex-start;
+  }
+  .key {
+    display: flex;
+    margin: 4px 0 0;
+  }
+  .authors {
+    font-size: 15px;
+  }
+  .affil {
+    font-size: 13px;
+  }
+  .nav ul {
+    justify-content: flex-start;
+    gap: 22px;
+  }
+  .section {
+    padding: 60px 22px;
+  }
+  .section + .section > .read:first-child:before {
+    margin: -60px 0 52px;
+  }
+  h2 {
+    font-size: 30px;
+  }
+  .question {
+    font-size: 22px;
+  }
+  .statement {
+    padding: 58px 24px 16px;
+  }
+  .statement > p {
+    font-size: 18px;
+  }
+  .evidence > summary span {
+    display: none;
+  }
+  .grid.cols-4,
+  .cases {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .grid.sweep {
+    grid-template-columns: 1fr;
+  }
+  .eq {
+    font-size: 28px;
+  }
+  .st-plot {
+    --name: 7.6em;
+    font-size: 12.5px;
+  }
+}
+@media (max-width: 440px) {
+  body {
+    font-size: 16px;
+  }
+  .hero-inner {
+    padding: 48px 22px 0;
+  }
+  .hero h1 {
+    font-size: 30px;
+  }
+  .grid.cols-2,
+  .grid.cols-3 {
+    grid-template-columns: 1fr;
+  }
+  .tabs [role="tab"] {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  table {
+    font-size: 13px;
+  }
+  th,
+  td {
+    padding: 9px 5px;
+  }
+  th.num {
+    white-space: normal;
+  }
+  .lightbox {
+    padding: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
